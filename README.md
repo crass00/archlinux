@@ -1,4 +1,4 @@
-archlinux-pkgs
+archlinux
 ==============
 
-archlinux-pkgs
+my various archlinux related things like scripts and pkgs
