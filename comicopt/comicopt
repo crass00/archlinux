@@ -1,0 +1,50 @@
+#!/bin/bash
+# This script optimizes your comic collection by removing useless data from the jpg files, saving files in progressive format
+# and optimizing the huffman tables (you can also use arithmetic encoding but it's not recommended due to low decoder support)
+# You can shrink file by around 10% this way, maybe 15% with Arithmetic Coding
+# Files are "compressed" to an uncompressed .cbz file even thought original file may have been a .cbr 
+
+TMPLOC=/tmp/comicopt
+# setup
+mkdir -p /tmp/comicopt # create working folder
+
+
+function extract_files(){ #{{{
+   file=$(basename "$1" )
+   stub=${file%.*}
+   7z x $1 -o$TEMPLOC/$stub 
+} #}}}
+
+function progressive_and_optimize_huffman(){ #{{{
+   jpegtran -copy none -optimize input_image.jpg > output_image.jpg && mv output_image.jpg input_image.jpg
+  
+} #}}}
+
+function optimize_more{ #{{{
+   jpegrescan
+  
+} #}}}
+
+function optimize_more_arithmetic_coding{ #{{{
+   jpegrescan
+  
+} #}}}
+
+function resize_files(){ #{{{
+   7z
+   # check if file is wider than longer (landscape mode)
+   # if so width = width * 2
+   # resize file 
+      
+} #}}}
+
+
+function test_integrity(){ #{{{
+   find -iname "*.jpg" -print0 | xargs -0 jpeginfo -c | grep -e WARNING -e ERROR
+  
+} #}}}
+
+function zip_files(){ #{{{
+   7z
+  
+} #}}}
