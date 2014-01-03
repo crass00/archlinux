@@ -1,50 +1,62 @@
 #!/bin/bash
 # This script optimizes your comic collection by removing useless data from the jpg files, saving files in progressive format
-# and optimizing the huffman tables (you can also use arithmetic encoding but it's not recommended due to low decoder support)
+# and optimizing the huffman tables 
+# You can also optimize with arithmetic coding instead of huffman but be wary.  libjpeg-turbo supports it so any comic reader on linix
+# is probably ok.  On windows 
 # You can shrink file by around 10% this way, maybe 15% with Arithmetic Coding
 # Files are "compressed" to an uncompressed .cbz file even thought original file may have been a .cbr 
 
 TMPLOC=/tmp/comicopt
 # setup
-mkdir -p /tmp/comicopt # create working folder
+mkdir -p $TMPLOC # create working folder
 
+# strip out filename without path and extension
+BFILE=$(basename "$1" )
+STUB=${BFILE%.*}
+7z e $1 -o$TEMPLOC/$STUB 
 
-function extract_files(){ #{{{
-   file=$(basename "$1" )
-   stub=${file%.*}
-   7z x $1 -o$TEMPLOC/$stub 
-} #}}}
+# remove "group release" files from folder
+FILEBYNAME=( $( cat /etc/comicopt/files.txt) )
+           arrayfname=${#FILEBYNAME[@]}
+           for ((i=0;i<$arrayfname;i++)); do 
+              if [ -f $TMPLOC/$STUB/$arrayfname ]; then
+              rm $TMPLOC/$STUB/$arrayfname       
+           done                
+# not even close to figuring this one out
+#if [ -f /usr/bin/md5sum ]; then           
+#   filebymd5=( $( cat /etc/comicopt/md5.txt) )
+# LASTJPG="$(ls -1 *.jpg | tail -n 1)"
+#           arrayfname=${#filebyname[@]}
+#           for ((i=0;i<$arrayfname;i++)); do 
+#              if [ -f $TMPLOC/$stub/$arrayfname ]; then
+#              rm $TMPLOC/$stub/$arrayfname       
+#           done
 
-function progressive_and_optimize_huffman(){ #{{{
-   jpegtran -copy none -optimize input_image.jpg > output_image.jpg && mv output_image.jpg input_image.jpg
-  
-} #}}}
+if [ "$#" == -r ]; then
+  echo
+  # for each file
+  # check if file is wider than longer
+  # if it is doube the resize width for that file
+  # resize file
+  # loop 
+fi
 
-function optimize_more{ #{{{
-   jpegrescan
-  
-} #}}}
+# optimize file by removing useless junk from file and saving file in progressive format
+find $TMPLOC -type f -iname '*jpg' -exec sh -c 'jpegtran -outfile {}.out -copy none -progressive -optimize {}; mv {}.out {} ' \;
 
-function optimize_more_arithmetic_coding{ #{{{
-   jpegrescan
-  
-} #}}}
+# optimize file further by optimizing the progressive information
+if [ "$#" == -a ]; then
+   find $TMPLOC -type f -iname '*jpg' -exec sh -c 'jpegrescana -outfile {}.out -q -s -t -a {}; mv {}.out {} ' \;
+   # add line to optimize first file with huffman only, this is for Windows thumbnail support
+   # FIRSTFILE=$(ls -1 $TMPLOC/$STUB/*.jpg | head -1)
+   # if [ -f $TMPLOC/$STUB/$FIRSTFILE ]; then
+      # jpegtran -outfile $TMPLOC/$STUB/$FIRSTFILE.out -copy none -progressive -optimize {}; mv {}.out {} 
+      # jpegrescana -outfile $TMPLOC/$STUB/$FIRSTFILE.out -q -s -t {}; mv {}.out {} 
+   # fi
+else
+   find $TMPLOC -type f -iname '*jpg' -exec sh -c 'jpegrescana -outfile {}.out -q -s -t {}; mv {}.out {} ' \;
+fi
+
+find -iname "*.jpg" -print0 | xargs -0 jpeginfo -c | grep -e WARNING -e ERROR
 
 function resize_files(){ #{{{
-   7z
-   # check if file is wider than longer (landscape mode)
-   # if so width = width * 2
-   # resize file 
-      
-} #}}}
-
-
-function test_integrity(){ #{{{
-   find -iname "*.jpg" -print0 | xargs -0 jpeginfo -c | grep -e WARNING -e ERROR
-  
-} #}}}
-
-function zip_files(){ #{{{
-   7z
-  
-} #}}}
